@@ -81,15 +81,15 @@ func (tun *NativeTun) routineHackListener() {
 		if err2 != nil {
 			return
 		}
-		switch err {
-		case unix.EINVAL:
+		switch {
+		case errors.Is(err, unix.EINVAL):
 			if last != up {
 				// If the tunnel is up, it reports that write() is
 				// allowed but we provided invalid data.
 				tun.events <- EventUp
 				last = up
 			}
-		case unix.EIO:
+		case errors.Is(err, unix.EIO):
 			if last != down {
 				// If the tunnel is down, it reports that no I/O
 				// is possible, without checking our provided data.
@@ -126,7 +126,7 @@ func createNetlinkSocket() (int, error) {
 
 func (tun *NativeTun) routineNetlinkListener() {
 	defer func() {
-		unix.Close(tun.netlinkSock)
+		_ = unix.Close(tun.netlinkSock)
 		tun.hackListenerClosed.Lock()
 		close(tun.events)
 		tun.netlinkCancel.Close()
@@ -211,7 +211,9 @@ func getIFIndex(name string) (int32, error) {
 		return 0, err
 	}
 
-	defer unix.Close(fd)
+	defer func(fd int) {
+		_ = unix.Close(fd)
+	}(fd)
 
 	var ifr [ifReqSize]byte
 	copy(ifr[:], name)
@@ -245,7 +247,9 @@ func (tun *NativeTun) setMTU(n int) error {
 		return err
 	}
 
-	defer unix.Close(fd)
+	defer func(fd int) {
+		_ = unix.Close(fd)
+	}(fd)
 
 	// do ioctl call
 	var ifr [ifReqSize]byte
@@ -281,7 +285,9 @@ func (tun *NativeTun) MTU() (int, error) {
 		return 0, err
 	}
 
-	defer unix.Close(fd)
+	defer func(fd int) {
+		_ = unix.Close(fd)
+	}(fd)
 
 	// do ioctl call
 
@@ -572,7 +578,7 @@ func CreateTUN(name string, mtu int) (Device, error) {
 
 	err = unix.SetNonblock(nfd, true)
 	if err != nil {
-		unix.Close(nfd)
+		_ = unix.Close(nfd)
 		return nil, err
 	}
 
@@ -616,7 +622,10 @@ func CreateTUNFromFile(file *os.File, mtu int) (Device, error) {
 	}
 	tun.netlinkCancel, err = rwcancel.NewRWCancel(tun.netlinkSock)
 	if err != nil {
-		unix.Close(tun.netlinkSock)
+		err := unix.Close(tun.netlinkSock)
+		if err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
@@ -626,7 +635,7 @@ func CreateTUNFromFile(file *os.File, mtu int) (Device, error) {
 
 	err = tun.setMTU(mtu)
 	if err != nil {
-		unix.Close(tun.netlinkSock)
+		_ = unix.Close(tun.netlinkSock)
 		return nil, err
 	}
 
@@ -635,27 +644,3 @@ func CreateTUNFromFile(file *os.File, mtu int) (Device, error) {
 
 // CreateUnmonitoredTUNFromFD creates a Device from the provided file
 // descriptor.
-func CreateUnmonitoredTUNFromFD(fd int) (Device, string, error) {
-	err := unix.SetNonblock(fd, true)
-	if err != nil {
-		return nil, "", err
-	}
-	file := os.NewFile(uintptr(fd), "/dev/tun")
-	tun := &NativeTun{
-		tunFile:     file,
-		events:      make(chan Event, 5),
-		errors:      make(chan error, 5),
-		tcpGROTable: newTCPGROTable(),
-		udpGROTable: newUDPGROTable(),
-		toWrite:     make([]int, 0, IdealBatchSize),
-	}
-	name, err := tun.Name()
-	if err != nil {
-		return nil, "", err
-	}
-	err = tun.initFromFlags(name)
-	if err != nil {
-		return nil, "", err
-	}
-	return tun, name, err
-}

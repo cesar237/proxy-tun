@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	ExitSetupSuccess = 0
-	ExitSetupFailed  = 1
+	ExitSetupFailed = 1
 )
 
 const (
