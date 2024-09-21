@@ -64,7 +64,7 @@ func (tun *NativeTun) routineHackListener() {
 	defer tun.hackListenerClosed.Unlock()
 	/* This is needed for the detection to work across network namespaces
 	* If you are reading this and know a better method, please get in touch.
-	*/
+	 */
 	last := 0
 	const (
 		up   = 1

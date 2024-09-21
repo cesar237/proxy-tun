@@ -17,9 +17,7 @@ const (
 )
 
 const (
-	ENV_WG_TUN_FD             = "WG_TUN_FD"
-	ENV_WG_UAPI_FD            = "WG_UAPI_FD"
-	ENV_WG_PROCESS_FOREGROUND = "WG_PROCESS_FOREGROUND"
+	EnvWgTunFd = "WG_TUN_FD"
 )
 
 const DefaultMTU = 1420
@@ -28,7 +26,7 @@ func main() {
 	interfaceName := "tun0"
 
 	tdev, err := func() (tun.Device, error) {
-		tunFdStr := os.Getenv(ENV_WG_TUN_FD)
+		tunFdStr := os.Getenv(EnvWgTunFd)
 		if tunFdStr == "" {
 			return tun.CreateTUN(interfaceName, DefaultMTU)
 		}
@@ -64,21 +62,21 @@ func main() {
 
 	file := tdev.File()
 
-	fmt.Println("TUNDEV file:", file)
+	fmt.Println("TUN-DEV file:", file)
 	fmt.Println("Everything should be fine...TUN device should exist somewhere")
 
 	go io_rw.RoutineReadFromTun(tdev)
+	go io_rw.RoutineWriteToTun(tdev)
 
 	errs := make(chan error)
 	term := make(chan os.Signal, 1)
-
 
 	signal.Notify(term, unix.SIGTERM)
 	signal.Notify(term, os.Interrupt)
 
 	select {
-		case <- term:
-		case <- errs:
+	case <-term:
+	case <-errs:
 	}
 
 	fmt.Println("Exiting...")
