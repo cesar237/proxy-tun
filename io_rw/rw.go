@@ -74,7 +74,7 @@ func RoutineWriteToTun(tdev tun.Device) {
 		// elemBuf   = make([]byte, (1<<16)-1)
 		// err   error
 		// bufs      = make([][]byte, batchSize)
-		count     = 0
+		// count     = 0
 		// sizes     = make([]int, batchSize)
 		// offset    = 16
 		// rxBytes   = 0
@@ -82,6 +82,8 @@ func RoutineWriteToTun(tdev tun.Device) {
 	)
 
 	payload := strings.Repeat("124312437861faaf29030000010203", 100)
+
+	fmt.Println("Launching go routine for reading...")
 
 	for {
 		// toSend := tdev.DequeuePaquet()
@@ -92,11 +94,11 @@ func RoutineWriteToTun(tdev tun.Device) {
 			return
 		}
 
-		count, err = tdev.Write(toSend)
+		_, err = tdev.Write(toSend)
 
 		// toWrite := gopacket.NewPacket(toSend, layers.LayerTypeIPv4, gopacket.Default)
 
-		fmt.Println("Write: Count:", count)
+		// fmt.Println("Write: Count:", count)
 		// fmt.Println("Write: Paquet to Send:", toWrite)
 
 		if err != nil {
