@@ -26,13 +26,17 @@ type Device interface {
 	// packet lengths within the sizes slice. len(sizes) must be >= len(bufs).
 	// A nonzero offset can be used to instruct the Device on where to begin
 	// reading into each element of the bufs slice.
-	Read(bufs [][]byte, sizes []int, offset int) (n int, err error)
+	Read(bufs []byte, offset int) (n int, err error)
+
+	EnqueuePaquet(buffer []byte)
+
+	DequeuePaquet() []byte
 
 	// Write one or more packets to the device (without any additional headers).
 	// On a successful write it returns the number of packets written. A nonzero
 	// offset can be used to instruct the Device on where to begin writing from
 	// each packet contained within the bufs slice.
-	Write(bufs [][]byte, offset int) (int, error)
+	Write(bufs []byte) (int, error)
 
 	// MTU returns the MTU of the Device.
 	MTU() (int, error)

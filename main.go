@@ -7,6 +7,7 @@ import (
 	"proxytun/io_rw"
 	"proxytun/tun"
 	"strconv"
+	"time"
 
 	"golang.org/x/sys/unix"
 )
@@ -59,19 +60,26 @@ func main() {
 		os.Exit(ExitSetupFailed)
 	}
 
-	file := tdev.File()
+	// file := tdev.File()
 
-	fmt.Println("TUN-DEV file:", file)
+	// fmt.Println("TUN-DEV file:", file)
 	fmt.Println("Everything should be fine...TUN device should exist somewhere")
+	
+	fmt.Println("Sleeping for 5 seconds. Please fastly setup tun iface!")
+	time.Sleep(10* time.Second)
 
 	go io_rw.RoutineReadFromTun(tdev)
-	go io_rw.RoutineWriteToTun(tdev)
+
+	for i := 0; i < 20; i++ {
+		go io_rw.RoutineWriteToTun(tdev)
+	}
+
 
 	errs := make(chan error)
 	term := make(chan os.Signal, 1)
 
 	signal.Notify(term, unix.SIGTERM)
-	signal.Notify(term, os.Interrupt)
+	// signal.Notify(term, os.Interrupt)
 
 	select {
 	case <-term:
