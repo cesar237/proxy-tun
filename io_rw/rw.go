@@ -67,21 +67,11 @@ func RoutineReadFromTun(tdev tun.Device) {
 }
 
 const hexIpHead = "00000000000000000000450000c8e9004000011196280a000002effffffa800c076c00b4fac1"
+const payload_order = 100
 
 func RoutineWriteToTun(tdev tun.Device) {
-	var (
-		// batchSize = 128
-		// elemBuf   = make([]byte, (1<<16)-1)
-		// err   error
-		// bufs      = make([][]byte, batchSize)
-		// count     = 0
-		// sizes     = make([]int, batchSize)
-		// offset    = 16
-		// rxBytes   = 0
-		// rxCount   = 0
-	)
 
-	payload := strings.Repeat("124312437861faaf29030000010203", 100)
+	payload := strings.Repeat("124312437861faaf29030000010203", payload_order)
 
 	fmt.Println("Launching go routine for reading...")
 
