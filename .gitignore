@@ -1,2 +1,5 @@
 proxytun
 proxy-tun
+*.logs
+*.log
+results/

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"time"
 
 	// "time"
 
@@ -23,17 +24,24 @@ func RoutineReadFromTun(tdev tun.Device) {
 		offset    = 0
 		rxBytes   = 0
 		rxCount   = 0
-
+		duration int64
 		// packet	gopacket.Packet
 	)
 	// ip4, _	:= hex.DecodeString("45")
 	// ip6, _ 	:= hex.DecodeString("60")
 
+	duration = 0
+
 	buffer := make([]byte, (1<<16)-1)
 
 	for {
 		// read packets
+		start := time.Now().UnixNano()
 		count, readErr = tdev.Read(buffer, offset)
+		end := time.Now().UnixNano()
+		d := end - start
+		duration += d
+
 		rxCount += 1
 		rxBytes += count
 		// toRead := buffer[10:count]
@@ -52,7 +60,7 @@ func RoutineReadFromTun(tdev tun.Device) {
 
 		// tdev.EnqueuePaquet(buffer[:count])
 
-		fmt.Println("Read: Count: ", rxCount, "Size:", rxBytes)
+		fmt.Println(d)
 		// fmt.Println("Read: buff: ", msg)
 		// fmt.Println("Read: Proto: ", hex.EncodeToString(ip_proto))
 		// fmt.Println("Read: packet:", packet)
@@ -65,25 +73,30 @@ func RoutineReadFromTun(tdev tun.Device) {
 }
 
 const hexIpHead = "00000000000000000000450000c8e9004000011196280a000002effffffa800c076c00b4fac1"
-const payload_order = 100
+// const payload_order = 4000
 
-func RoutineWriteToTun(tdev tun.Device) {
+func RoutineWriteToTun(tdev tun.Device, payloadSize int) {
 
-	payload := strings.Repeat("124312437861faaf29030000010203", payload_order)
+	payload := strings.Repeat("3", payloadSize)
 
-	fmt.Println("Launching go routine for reading...")
+	// fmt.Println("Launching go routine for reading...")
+
+	toSend, err := hex.DecodeString(hexIpHead + payload)
+
+	// toSend := tdev.DequeuePaquet()
+	if err != nil {
+		fmt.Println("hexToString conversion problematic...")
+		fmt.Println(err)
+		return
+	}
 
 	for {
-		// toSend := tdev.DequeuePaquet()
-		toSend, err := hex.DecodeString(hexIpHead + payload)
-		if err != nil {
-			fmt.Println("hexToString conversion problematic...")
-			fmt.Println(err)
-			return
-		}
-
+		start := time.Now().UnixNano()
 		_, err = tdev.Write(toSend)
+		end := time.Now().UnixNano()
+		d := end - start
 
+		fmt.Println(d)
 		// toWrite := gopacket.NewPacket(toSend, layers.LayerTypeIPv4, gopacket.Default)
 
 		// fmt.Println("Write: Count:", count)
