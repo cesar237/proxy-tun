@@ -7,7 +7,6 @@ import (
 	"proxytun/io_rw"
 	"proxytun/tun"
 	"strconv"
-	"time"
 
 	"golang.org/x/sys/unix"
 )
@@ -65,14 +64,18 @@ func main() {
 	// fmt.Println("TUN-DEV file:", file)
 	fmt.Println("Everything should be fine...TUN device should exist somewhere")
 	
-	fmt.Println("Sleeping for 5 seconds. Please fastly setup tun iface!")
-	time.Sleep(10* time.Second)
+	// fmt.Println("Sleeping for 5 seconds. Please fastly setup tun iface!")
+	// time.Sleep(5 * time.Second)
+
+	// Initialize a UDP connection
+	// 1. Should create a connection object through with the packets will be sent.
+	// 2. Should pass the connection object to the Read routine to send the packets to the network
 
 	go io_rw.RoutineReadFromTun(tdev)
 
-	for i := 0; i < 20; i++ {
-		go io_rw.RoutineWriteToTun(tdev)
-	}
+	// for i := 0; i < 20; i++ {
+	// 	go io_rw.RoutineWriteToTun(tdev)
+	// }
 
 
 	errs := make(chan error)

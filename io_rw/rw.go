@@ -1,7 +1,6 @@
 package io_rw
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -9,9 +8,6 @@ import (
 	// "time"
 
 	"proxytun/tun"
-
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 )
 
 
@@ -28,10 +24,10 @@ func RoutineReadFromTun(tdev tun.Device) {
 		rxBytes   = 0
 		rxCount   = 0
 
-		packet	gopacket.Packet
+		// packet	gopacket.Packet
 	)
-	ip4, _	:= hex.DecodeString("45")
-	ip6, _ 	:= hex.DecodeString("60")
+	// ip4, _	:= hex.DecodeString("45")
+	// ip6, _ 	:= hex.DecodeString("60")
 
 	buffer := make([]byte, (1<<16)-1)
 
@@ -40,24 +36,26 @@ func RoutineReadFromTun(tdev tun.Device) {
 		count, readErr = tdev.Read(buffer, offset)
 		rxCount += 1
 		rxBytes += count
-		toRead := buffer[10:count]
+		// toRead := buffer[10:count]
 
-		ip_proto := toRead[:1]
+		// ip_proto := toRead[:1]
 
-		if bytes.Equal(ip_proto, ip4) {
-			packet = gopacket.NewPacket(toRead, layers.LayerTypeIPv4, gopacket.Default)
-		} else if bytes.Equal(ip_proto, ip6) {
-			packet = gopacket.NewPacket(toRead, layers.LayerTypeIPv6, gopacket.Default)
-		}
+		// if bytes.Equal(ip_proto, ip4) {
+		// 	packet = gopacket.NewPacket(toRead, layers.LayerTypeIPv4, gopacket.Default)
+		// } else if bytes.Equal(ip_proto, ip6) {
+		// 	packet = gopacket.NewPacket(toRead, layers.LayerTypeIPv6, gopacket.Default)
+		// } else {
+		// 	packet = nil
+		// }
 
-		msg := hex.EncodeToString(toRead)
+		// msg := hex.EncodeToString(toRead)
 
-		tdev.EnqueuePaquet(buffer[:count])
+		// tdev.EnqueuePaquet(buffer[:count])
 
 		fmt.Println("Read: Count: ", rxCount, "Size:", rxBytes)
-		fmt.Println("Read: buff: ", msg) 
-		fmt.Println("Read: packet:", packet)
-		fmt.Println("Read: Proto: ", hex.EncodeToString(ip_proto))
+		// fmt.Println("Read: buff: ", msg)
+		// fmt.Println("Read: Proto: ", hex.EncodeToString(ip_proto))
+		// fmt.Println("Read: packet:", packet)
 
 		if readErr != nil {
 			fmt.Println(readErr)
