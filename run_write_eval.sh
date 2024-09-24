@@ -14,7 +14,7 @@ sudo ip l del dev tun0
 mkdir -p $res_path
 make
 
-for run in `seq 1 $nrun`; do
+for run in `seq 1 $nruns`; do
     for n_routine in $N_ROUTINES; do
         for payload_size in $PAYLOAD_SIZES; do
             # exp_code=${payload_size}_${n_routine}_${run}
